@@ -1,31 +1,33 @@
-import random, socket, struct, mechanize
-from selenium import webdriver
+import random, socket, struct, threading
+import requests, bs4, logging
 
-def search_addr(br):
+# Global var
+found_site = None
 
+def search_addr():
     addr = socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff)))
-    print(addr)
+    # Google IP for testing
+    # addr = '172.217.28.228'
     try:
-        br.open('http://'+addr)
-        print(br.title())
+        r = requests.get('http://'+addr)
+        html = bs4.BeautifulSoup(r.text,features="html5lib")
+        logging.debug(html.title.text)
     except:
-        print('Site não encontrado.')
+        logging.debug('IP: ' +addr + ' - Not reachable.')
 
 def main():
+    threads = []
+    logging.basicConfig(level=logging.DEBUG,
+                    format='[%(levelname)s] (%(threadName)-10s) %(message)s',
+                    )
 
-    br = mechanize.Browser()
+    for i in range(4):
+        t = threading.Thread(target=search_addr)
+        threads.append(t)
+        t.start()
 
-    # Browser options
-    br.set_handle_equiv(True)
-    br.set_handle_gzip(True)
-    br.set_handle_redirect(True)
-    br.set_handle_referer(True)
-    br.set_handle_robots(False)
 
-    br.set_handle_refresh(mechanize._http.HTTPRefreshProcessor(), max_time=1)
-    br.addheaders = [('User-agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:64.0) Gecko/20100101 Firefox/64.0')]
-
-    search_addr(br)
+    # search_addr(headers)
 
 
 if __name__ == "__main__":
