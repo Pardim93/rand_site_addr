@@ -1,19 +1,22 @@
 import random, socket, struct, threading
 import requests, bs4, logging
 
-# Global var
-found_site = None
-
+# Globals
+found_site_event = threading.Event()
+sites = []
 def search_addr():
-    addr = socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff)))
-    # Google IP for testing
-    # addr = '172.217.28.228'
-    try:
-        r = requests.get('http://'+addr)
-        html = bs4.BeautifulSoup(r.text,features="html5lib")
-        logging.debug(html.title.text)
-    except:
-        logging.debug('IP: ' +addr + ' - Not reachable.')
+    while not found_site_event.is_set():
+        addr = socket.inet_ntoa(struct.pack('>I', random.randint(1, 0xffffffff)))
+        # Google IP for testing
+        # addr = '172.217.28.228'
+        try:
+            r = requests.get('http://'+addr)
+            html = bs4.BeautifulSoup(r.text,features="html5lib")
+            logging.debug(html.title.text +' - '+ addr)
+            sites.append(addr)
+            found_site_event.set()
+        except:
+            logging.debug('IP: ' +addr + ' - Not reachable.')
 
 def main():
     threads = []
@@ -26,9 +29,8 @@ def main():
         threads.append(t)
         t.start()
 
-
+    logging.debug(sites)
     # search_addr(headers)
-
 
 if __name__ == "__main__":
     main()
