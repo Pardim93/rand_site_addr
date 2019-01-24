@@ -6,7 +6,7 @@ sites = []
 ip_args = 1
 
 def write_found_sites():
-    with open('found_sites.txt', 'w') as file:
+    with open('found_sites.txt', 'a') as file:
         for site in sites:
             file.write("%s\n" % site)
 
@@ -26,7 +26,7 @@ def search_addr():
             logging.debug('IP: ' +addr + ' - Not reachable.')
 
 
-def set_search(thread_args, ip_args):
+def set_search_threads(thread_args, ip_args):
     threads = []
     logging.basicConfig(level=logging.DEBUG,
                     format='[%(levelname)s] (%(threadName)-10s) %(message)s',
@@ -47,7 +47,7 @@ def main():
 
     args = parser.parse_args()
     thread_args, ip_args =  args.threads, args.ip
-    set_search(thread_args, ip_args)
+    set_search_threads(thread_args, ip_args)
 
     found_site_event.wait()
     write_found_sites()
