@@ -3,6 +3,7 @@ import requests, bs4, logging, argparse
 # Globals
 found_site_event = threading.Event()
 sites = []
+ip_args = 1
 
 def write_found_sites():
     with open('found_sites.txt', 'w') as file:
@@ -19,8 +20,8 @@ def search_addr():
             html = bs4.BeautifulSoup(r.text,features="html5lib")
             logging.debug(html.title.text +' - '+ addr)
             sites.append(addr)
-            print(sites)
-            found_site_event.set()
+            if len(sites) >= ip_args:
+                found_site_event.set()
         except:
             logging.debug('IP: ' +addr + ' - Not reachable.')
 
@@ -37,7 +38,6 @@ def set_search(thread_args, ip_args):
         t.start()
 
     logging.debug(sites)
-    # search_addr(headers)
 
 def main():
     # config parser
@@ -46,7 +46,7 @@ def main():
     parser.add_argument('--ip' , default=1, type=int, help='Amount of IP to find (default = 1)')
 
     args = parser.parse_args()
-    thread_args, ip_args =  args.ip, args.threads
+    thread_args, ip_args =  args.threads, args.ip
     set_search(thread_args, ip_args)
 
     found_site_event.wait()
